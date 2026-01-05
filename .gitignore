@@ -36,3 +36,4 @@ out
 *.sln
 *.sw?
 .cursor/plans
+docs

@@ -1,13 +1,15 @@
 {
-  "name": "api",
+  "name": "@ai-chatbot/api",
   "version": "1.0.0",
-  "description": "",
   "main": "dist/src/main",
   "scripts": {
+    "dev": "nest start --watch",
     "build": "nest build",
     "start": "nest start",
-    "start:dev": "nest start --watch",
-    "start:prod": "node ."
+    "start:prod": "node .",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "type-check": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
@@ -15,9 +17,12 @@
   "packageManager": "pnpm@10.24.0",
   "dependencies": {
     "@nestjs/common": "^11.1.11",
+    "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.1.11",
     "@nestjs/platform-express": "^11.1.11",
-    "reflect-metadata": "~0.2.2"
+    "@trpc/server": "^11.8.1",
+    "reflect-metadata": "~0.2.2",
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.14",
