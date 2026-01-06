@@ -1,6 +1,5 @@
 {
-  "name": "web",
-  "private": true,
+  "name": "@ai-chatbot/web",
   "version": "0.0.0",
   "type": "module",
   "scripts": {
