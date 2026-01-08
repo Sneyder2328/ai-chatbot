@@ -177,9 +177,9 @@ export type ChatWhereInput = {
   AND?: Prisma.ChatWhereInput | Prisma.ChatWhereInput[]
   OR?: Prisma.ChatWhereInput[]
   NOT?: Prisma.ChatWhereInput | Prisma.ChatWhereInput[]
-  id?: Prisma.StringFilter<"Chat"> | string
+  id?: Prisma.UuidFilter<"Chat"> | string
   title?: Prisma.StringFilter<"Chat"> | string
-  userId?: Prisma.StringFilter<"Chat"> | string
+  userId?: Prisma.UuidFilter<"Chat"> | string
   createdAt?: Prisma.DateTimeFilter<"Chat"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Chat"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -202,7 +202,7 @@ export type ChatWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.ChatWhereInput[]
   NOT?: Prisma.ChatWhereInput | Prisma.ChatWhereInput[]
   title?: Prisma.StringFilter<"Chat"> | string
-  userId?: Prisma.StringFilter<"Chat"> | string
+  userId?: Prisma.UuidFilter<"Chat"> | string
   createdAt?: Prisma.DateTimeFilter<"Chat"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Chat"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -224,9 +224,9 @@ export type ChatScalarWhereWithAggregatesInput = {
   AND?: Prisma.ChatScalarWhereWithAggregatesInput | Prisma.ChatScalarWhereWithAggregatesInput[]
   OR?: Prisma.ChatScalarWhereWithAggregatesInput[]
   NOT?: Prisma.ChatScalarWhereWithAggregatesInput | Prisma.ChatScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"Chat"> | string
+  id?: Prisma.UuidWithAggregatesFilter<"Chat"> | string
   title?: Prisma.StringWithAggregatesFilter<"Chat"> | string
-  userId?: Prisma.StringWithAggregatesFilter<"Chat"> | string
+  userId?: Prisma.UuidWithAggregatesFilter<"Chat"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Chat"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Chat"> | Date | string
 }
@@ -431,9 +431,9 @@ export type ChatScalarWhereInput = {
   AND?: Prisma.ChatScalarWhereInput | Prisma.ChatScalarWhereInput[]
   OR?: Prisma.ChatScalarWhereInput[]
   NOT?: Prisma.ChatScalarWhereInput | Prisma.ChatScalarWhereInput[]
-  id?: Prisma.StringFilter<"Chat"> | string
+  id?: Prisma.UuidFilter<"Chat"> | string
   title?: Prisma.StringFilter<"Chat"> | string
-  userId?: Prisma.StringFilter<"Chat"> | string
+  userId?: Prisma.UuidFilter<"Chat"> | string
   createdAt?: Prisma.DateTimeFilter<"Chat"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Chat"> | Date | string
 }

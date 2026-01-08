@@ -177,8 +177,8 @@ export type MessageWhereInput = {
   AND?: Prisma.MessageWhereInput | Prisma.MessageWhereInput[]
   OR?: Prisma.MessageWhereInput[]
   NOT?: Prisma.MessageWhereInput | Prisma.MessageWhereInput[]
-  id?: Prisma.StringFilter<"Message"> | string
-  chatId?: Prisma.StringFilter<"Message"> | string
+  id?: Prisma.UuidFilter<"Message"> | string
+  chatId?: Prisma.UuidFilter<"Message"> | string
   role?: Prisma.StringFilter<"Message"> | string
   content?: Prisma.StringFilter<"Message"> | string
   createdAt?: Prisma.DateTimeFilter<"Message"> | Date | string
@@ -199,7 +199,7 @@ export type MessageWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.MessageWhereInput | Prisma.MessageWhereInput[]
   OR?: Prisma.MessageWhereInput[]
   NOT?: Prisma.MessageWhereInput | Prisma.MessageWhereInput[]
-  chatId?: Prisma.StringFilter<"Message"> | string
+  chatId?: Prisma.UuidFilter<"Message"> | string
   role?: Prisma.StringFilter<"Message"> | string
   content?: Prisma.StringFilter<"Message"> | string
   createdAt?: Prisma.DateTimeFilter<"Message"> | Date | string
@@ -221,8 +221,8 @@ export type MessageScalarWhereWithAggregatesInput = {
   AND?: Prisma.MessageScalarWhereWithAggregatesInput | Prisma.MessageScalarWhereWithAggregatesInput[]
   OR?: Prisma.MessageScalarWhereWithAggregatesInput[]
   NOT?: Prisma.MessageScalarWhereWithAggregatesInput | Prisma.MessageScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"Message"> | string
-  chatId?: Prisma.StringWithAggregatesFilter<"Message"> | string
+  id?: Prisma.UuidWithAggregatesFilter<"Message"> | string
+  chatId?: Prisma.UuidWithAggregatesFilter<"Message"> | string
   role?: Prisma.StringWithAggregatesFilter<"Message"> | string
   content?: Prisma.StringWithAggregatesFilter<"Message"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Message"> | Date | string
@@ -403,8 +403,8 @@ export type MessageScalarWhereInput = {
   AND?: Prisma.MessageScalarWhereInput | Prisma.MessageScalarWhereInput[]
   OR?: Prisma.MessageScalarWhereInput[]
   NOT?: Prisma.MessageScalarWhereInput | Prisma.MessageScalarWhereInput[]
-  id?: Prisma.StringFilter<"Message"> | string
-  chatId?: Prisma.StringFilter<"Message"> | string
+  id?: Prisma.UuidFilter<"Message"> | string
+  chatId?: Prisma.UuidFilter<"Message"> | string
   role?: Prisma.StringFilter<"Message"> | string
   content?: Prisma.StringFilter<"Message"> | string
   createdAt?: Prisma.DateTimeFilter<"Message"> | Date | string
