@@ -1,19 +1,8 @@
 {
+  "extends": "@ai-chatbot/tsconfig/nest.json",
   "compilerOptions": {
-    "module": "commonjs",
-    "declaration": true,
-    "removeComments": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
-    "target": "ES2024",
-    "strictNullChecks": true,
-    "sourceMap": true,
     "outDir": "./dist",
     "rootDir": "./",
-    "baseUrl": "./",
-    "skipLibCheck": true,
-    "incremental": true
+    "baseUrl": "./"
   }
 }
