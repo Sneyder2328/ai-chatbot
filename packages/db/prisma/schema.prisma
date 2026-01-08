@@ -14,51 +14,63 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid(7)) @db.Uuid
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp
+  id            String   @id @default(uuid(7)) @db.Uuid
+  email         String   @unique
+  name          String?
+  emailVerified Boolean  @default(false) @map("email_verified")
+  image         String?
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   sessions Session[]
-  chats    Chat[]
+  accounts Account[]
 
   @@map("users")
 }
 
 model Session {
   id        String   @id @default(uuid(7)) @db.Uuid
+  token     String   @unique
   userId    String   @map("user_id") @db.Uuid
-  expiresAt DateTime @map("expires_at") @db.Timestamp
+  expiresAt DateTime @map("expires_at") @db.Timestamptz
   ipAddress String?  @map("ip_address")
   userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
 }
 
-model Chat {
-  id        String   @id @default(uuid(7)) @db.Uuid
-  title     String
-  userId    String   @map("user_id") @db.Uuid
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp
+model Account {
+  id                    String    @id @default(uuid(7)) @db.Uuid
+  accountId             String    @map("account_id")
+  providerId            String    @map("provider_id")
+  userId                String    @map("user_id") @db.Uuid
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  idToken               String?   @map("id_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at") @db.Timestamptz
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at") @db.Timestamptz
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime  @updatedAt @map("updated_at") @db.Timestamptz
 
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  messages Message[]
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("chats")
+  @@unique([providerId, accountId])
+  @@map("accounts")
 }
 
-model Message {
-  id        String   @id @default(uuid(7)) @db.Uuid
-  chatId    String   @map("chat_id") @db.Uuid
-  role      String // 'user' | 'assistant'
-  content   String
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp
+model Verification {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  identifier String
+  value      String
+  expiresAt  DateTime @map("expires_at") @db.Timestamptz
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
-
-  @@map("messages")
+  @@map("verifications")
 }

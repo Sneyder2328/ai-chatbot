@@ -50,12 +50,12 @@ export type User = Prisma.UserModel
  */
 export type Session = Prisma.SessionModel
 /**
- * Model Chat
+ * Model Account
  * 
  */
-export type Chat = Prisma.ChatModel
+export type Account = Prisma.AccountModel
 /**
- * Model Message
+ * Model Verification
  * 
  */
-export type Message = Prisma.MessageModel
+export type Verification = Prisma.VerificationModel
