@@ -26,6 +26,7 @@ model User {
 
   sessions      Session[]
   accounts      Account[]
+  chats         Chat[]
 
   @@map("users")
 }
@@ -66,6 +67,19 @@ model Account {
   @@unique([providerId, accountId])
   @@index([userId])
   @@map("accounts")
+}
+
+model Chat {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  userId    String   @map("user_id")
+  title     String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("chats")
 }
 
 model Verification {
