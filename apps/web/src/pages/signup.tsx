@@ -15,6 +15,7 @@ export function SignupPage({ onNavigateToLogin }: SignupPageProps) {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -22,6 +23,7 @@ export function SignupPage({ onNavigateToLogin }: SignupPageProps) {
     name?: string
     email?: string
     password?: string
+    confirmPassword?: string
   }>({})
 
   const validateForm = () => {
@@ -29,6 +31,7 @@ export function SignupPage({ onNavigateToLogin }: SignupPageProps) {
       name?: string
       email?: string
       password?: string
+      confirmPassword?: string
     } = {}
 
     if (!name.trim()) {
@@ -47,6 +50,10 @@ export function SignupPage({ onNavigateToLogin }: SignupPageProps) {
       errors.password = "Password is required"
     } else if (password.length < 8) {
       errors.password = "Password must be at least 8 characters"
+    }
+
+    if (confirmPassword !== password) {
+      errors.confirmPassword = "Passwords do not match"
     }
 
     setFieldErrors(errors)
@@ -169,6 +176,20 @@ export function SignupPage({ onNavigateToLogin }: SignupPageProps) {
               }}
               icon={<Lock className="h-5 w-5" />}
               error={fieldErrors.password}
+              disabled={isLoading || isGoogleLoading}
+              autoComplete="new-password"
+            />
+
+            <Input
+              type="password"
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value)
+                clearFieldError("confirmPassword")
+              }}
+              icon={<Lock className="h-5 w-5" />}
+              error={fieldErrors.confirmPassword}
               disabled={isLoading || isGoogleLoading}
               autoComplete="new-password"
             />
