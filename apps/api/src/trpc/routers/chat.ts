@@ -1,12 +1,12 @@
-import { protectedProcedure, router } from "@ai-chatbot/trpc";
-import { z } from "zod";
+import { protectedProcedure, router } from "@ai-chatbot/trpc"
+import { z } from "zod"
 
 const chatSelect = {
   id: true,
   title: true,
   createdAt: true,
   updatedAt: true,
-} as const;
+} as const
 
 export const chatRouter = router({
   create: protectedProcedure
@@ -22,13 +22,13 @@ export const chatRouter = router({
           title: input.title ?? "New chat",
         },
         select: chatSelect,
-      });
+      })
 
       return {
         ...chat,
         createdAt: chat.createdAt.toISOString(),
         updatedAt: chat.updatedAt.toISOString(),
-      };
+      }
     }),
   list: protectedProcedure.query(async ({ ctx }) => {
     const chats = await ctx.db.chat.findMany({
@@ -39,12 +39,12 @@ export const chatRouter = router({
         updatedAt: "desc",
       },
       select: chatSelect,
-    });
+    })
 
     return chats.map((chat) => ({
       ...chat,
       createdAt: chat.createdAt.toISOString(),
       updatedAt: chat.updatedAt.toISOString(),
-    }));
+    }))
   }),
-});
+})

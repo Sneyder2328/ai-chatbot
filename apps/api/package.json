@@ -22,7 +22,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.24.0",
+  "packageManager": "pnpm@10.27.0",
   "dependencies": {
     "@ai-chatbot/trpc": "workspace:*",
     "@nestjs/common": "^11.1.11",

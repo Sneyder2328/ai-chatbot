@@ -1,15 +1,15 @@
-import "dotenv/config";
+import "dotenv/config"
 
-import { betterAuth } from "better-auth";
-import { prismaAdapter } from "better-auth/adapters/prisma";
-import { prisma } from "db";
+import { betterAuth } from "better-auth"
+import { prismaAdapter } from "better-auth/adapters/prisma"
+import { prisma } from "db"
 
 function requiredEnv(name: string): string {
-  const value = process.env[name];
+  const value = process.env[name]
   if (!value) {
-    throw new Error(`Missing required environment variable: ${name}`);
+    throw new Error(`Missing required environment variable: ${name}`)
   }
-  return value;
+  return value
 }
 
 export const auth = betterAuth({
@@ -40,4 +40,4 @@ export const auth = betterAuth({
       refreshCache: true,
     },
   },
-});
+})

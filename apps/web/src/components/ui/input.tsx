@@ -1,6 +1,6 @@
 import { cva, type VariantProps } from "class-variance-authority"
 import type { InputHTMLAttributes, ReactNode } from "react"
-import { forwardRef } from "react"
+import { forwardRef, useId } from "react"
 import { cn } from "../../lib/utils"
 
 const inputVariants = cva(
@@ -39,7 +39,8 @@ export interface InputProps
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, inputSize, label, error, icon, id, ...props }, ref) => {
-    const inputId = id || label?.toLowerCase().replace(/\s+/g, "-")
+    const fallbackId = useId()
+    const inputId = id || label?.toLowerCase().replace(/\s+/g, "-") || fallbackId
 
     return (
       <div className="w-full space-y-1.5">
