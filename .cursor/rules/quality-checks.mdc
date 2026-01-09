@@ -1,0 +1,103 @@
+---
+description: Quality checks after code changes - run formatting, linting, and type-checking
+alwaysApply: true
+---
+
+# Code Quality Verification
+
+After making any code changes, you MUST run the following quality checks before considering the task complete. These checks ensure code consistency and catch errors early.
+
+## Required Quality Checks
+
+Run these commands from the repository root in this order:
+
+### 1. Format and Lint (Biome)
+
+```bash
+pnpm lint:fix
+```
+
+This runs `biome check --write .` across all packages, which:
+- Formats code consistently (indentation, spacing, etc.)
+- Organizes imports automatically
+- Fixes auto-fixable lint issues
+
+### 2. Lint Check (Verify)
+
+```bash
+pnpm lint
+```
+
+This runs `biome check .` to verify there are no remaining lint issues that couldn't be auto-fixed.
+
+### 3. Type Check
+
+```bash
+pnpm type-check
+```
+
+This runs TypeScript's type checker (`tsc --noEmit`) across all packages to catch type errors.
+
+## Handling Failures
+
+### Lint Errors
+
+When `pnpm lint` fails:
+
+1. **DO NOT** simply suppress warnings with `// biome-ignore` comments unless there's a genuine, well-documented reason
+2. **DO NOT** disable rules project-wide to silence errors
+3. **DO** understand what the lint rule is trying to prevent
+4. **DO** fix the underlying issue properly
+
+Common patterns to avoid:
+- Using `any` type to silence type errors - instead, define proper types
+- Using `// @ts-ignore` or `// @ts-expect-error` without understanding the issue
+- Casting to `unknown` then to target type to bypass type safety
+
+### Type Errors
+
+When `pnpm type-check` fails:
+
+1. **Read the error carefully** - TypeScript errors often indicate real bugs
+2. **Trace the type flow** - understand where the type mismatch originates
+3. **Fix at the source** - don't patch symptoms, fix root causes
+
+Proper solutions:
+- Add missing type annotations
+- Fix incorrect function signatures
+- Update types when the runtime behavior has changed
+- Use type guards for narrowing, not type assertions
+
+### When Suppression is Acceptable
+
+Suppression comments are acceptable ONLY when:
+
+1. **Third-party type definitions are incorrect** - document the issue and link to any upstream bug report
+2. **Intentional any for dynamic data** - use `unknown` with proper validation instead when possible
+3. **Framework limitations** - some frameworks require patterns that conflict with strict typing
+
+Always include a comment explaining WHY the suppression is necessary:
+
+```typescript
+// biome-ignore lint/suspicious/noExplicitAny: Legacy API returns untyped data, migration tracked in #123
+```
+
+## Iteration Process
+
+1. Make code changes
+2. Run `pnpm lint:fix` to auto-format and fix simple issues
+3. Run `pnpm lint` - if it fails, analyze and fix properly
+4. Run `pnpm type-check` - if it fails, analyze and fix properly
+5. Repeat steps 2-4 until all checks pass
+6. Only then consider the task complete
+
+## Quality Philosophy
+
+The goal is **high-quality, maintainable code**, not just code that passes checks. Ask yourself:
+
+- Would a code reviewer approve this solution?
+- Is this fix addressing the symptom or the root cause?
+- Will this code be easy to understand and modify in 6 months?
+- Does this maintain type safety throughout the application?
+
+If you find yourself repeatedly suppressing the same type of error, it may indicate an architectural issue that should be addressed at a higher level.

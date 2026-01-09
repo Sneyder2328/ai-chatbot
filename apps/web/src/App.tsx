@@ -1,13 +1,13 @@
-import { useState } from "react"
-import { signOut, useSession } from "./lib/auth-client"
-import { LoginPage } from "./pages/login"
-import { SignupPage } from "./pages/signup"
+import { useState } from "react";
+import { signOut, useSession } from "./lib/auth-client";
+import { LoginPage } from "./pages/login";
+import { SignupPage } from "./pages/signup";
 
-type AuthPage = "login" | "signup"
+type AuthPage = "login" | "signup";
 
 function App() {
-  const { data: session, isPending } = useSession()
-  const [authPage, setAuthPage] = useState<AuthPage>("login")
+  const { data: session, isPending } = useSession();
+  const [authPage, setAuthPage] = useState<AuthPage>("login");
 
   // Show loading state while checking session
   if (isPending) {
@@ -15,7 +15,7 @@ function App() {
       <div className="flex min-h-screen items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
       </div>
-    )
+    );
   }
 
   // If user is authenticated, show the main app
@@ -38,15 +38,15 @@ function App() {
           </button>
         </div>
       </div>
-    )
+    );
   }
 
   // Show auth pages for unauthenticated users
   if (authPage === "login") {
-    return <LoginPage onNavigateToSignup={() => setAuthPage("signup")} />
+    return <LoginPage onNavigateToSignup={() => setAuthPage("signup")} />;
   }
 
-  return <SignupPage onNavigateToLogin={() => setAuthPage("login")} />
+  return <SignupPage onNavigateToLogin={() => setAuthPage("login")} />;
 }
 
-export default App
+export default App;
