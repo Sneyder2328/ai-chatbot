@@ -1,22 +1,13 @@
-import "dotenv/config"
-
 import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
 import { prisma } from "db"
-
-function requiredEnv(name: string): string {
-  const value = process.env[name]
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${name}`)
-  }
-  return value
-}
+import { env } from "../env"
 
 export const auth = betterAuth({
-  secret: requiredEnv("BETTER_AUTH_SECRET"),
-  baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
+  secret: env.betterAuthSecret,
+  baseURL: env.betterAuthUrl,
   basePath: "/api/auth",
-  trustedOrigins: [process.env.CLIENT_URL ?? "http://localhost:5173"],
+  trustedOrigins: env.corsOrigins,
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
@@ -24,11 +15,11 @@ export const auth = betterAuth({
     enabled: true,
   },
   socialProviders:
-    process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+    env.googleClientId && env.googleClientSecret
       ? {
           google: {
-            clientId: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            clientId: env.googleClientId,
+            clientSecret: env.googleClientSecret,
           },
         }
       : {},

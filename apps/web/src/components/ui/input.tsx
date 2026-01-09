@@ -40,7 +40,8 @@ export interface InputProps
 const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, inputSize, label, error, icon, id, ...props }, ref) => {
     const fallbackId = useId()
-    const inputId = id || label?.toLowerCase().replace(/\s+/g, "-") || fallbackId
+    const inputId =
+      id || label?.toLowerCase().replace(/\s+/g, "-") || fallbackId
 
     return (
       <div className="w-full space-y-1.5">
