@@ -1,170 +1,145 @@
-import { useState } from "react";
-import { GoogleIcon } from "../components/icons/google";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { signIn, signUp } from "../lib/auth-client";
-import { cn } from "../lib/utils";
+import { Lock, Mail, User } from "lucide-react"
+import { useState } from "react"
+import { GoogleIcon } from "../components/icons/google"
+import { Logo } from "../components/icons/logo"
+import { Button } from "../components/ui/button"
+import { Input } from "../components/ui/input"
+import { signIn, signUp } from "../lib/auth-client"
+import { cn } from "../lib/utils"
 
 interface SignupPageProps {
-  onNavigateToLogin?: () => void;
+  onNavigateToLogin?: () => void
 }
 
 export function SignupPage({ onNavigateToLogin }: SignupPageProps) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<{
-    name?: string;
-    email?: string;
-    password?: string;
-    confirmPassword?: string;
-  }>({});
+    name?: string
+    email?: string
+    password?: string
+  }>({})
 
   const validateForm = () => {
     const errors: {
-      name?: string;
-      email?: string;
-      password?: string;
-      confirmPassword?: string;
-    } = {};
+      name?: string
+      email?: string
+      password?: string
+    } = {}
 
     if (!name.trim()) {
-      errors.name = "Name is required";
+      errors.name = "Name is required"
     } else if (name.trim().length < 2) {
-      errors.name = "Name must be at least 2 characters";
+      errors.name = "Name must be at least 2 characters"
     }
 
     if (!email) {
-      errors.email = "Email is required";
+      errors.email = "Email is required"
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.email = "Please enter a valid email address";
+      errors.email = "Please enter a valid email address"
     }
 
     if (!password) {
-      errors.password = "Password is required";
+      errors.password = "Password is required"
     } else if (password.length < 8) {
-      errors.password = "Password must be at least 8 characters";
+      errors.password = "Password must be at least 8 characters"
     }
 
-    if (!confirmPassword) {
-      errors.confirmPassword = "Please confirm your password";
-    } else if (password !== confirmPassword) {
-      errors.confirmPassword = "Passwords do not match";
-    }
-
-    setFieldErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
+    setFieldErrors(errors)
+    return Object.keys(errors).length === 0
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+    e.preventDefault()
+    setError(null)
 
-    if (!validateForm()) return;
+    if (!validateForm()) return
 
-    setIsLoading(true);
+    setIsLoading(true)
     try {
       const { error } = await signUp.email({
         email,
         password,
         name: name.trim(),
-      });
+      })
 
       if (error) {
-        setError(error.message || "Failed to create account");
+        setError(error.message || "Failed to create account")
       }
     } catch {
-      setError("An unexpected error occurred. Please try again.");
+      setError("An unexpected error occurred. Please try again.")
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleGoogleSignUp = async () => {
-    setError(null);
-    setIsGoogleLoading(true);
+    setError(null)
+    setIsGoogleLoading(true)
     try {
       await signIn.social({
         provider: "google",
         callbackURL: window.location.origin,
-      });
+      })
     } catch {
-      setError("Failed to sign up with Google. Please try again.");
-      setIsGoogleLoading(false);
+      setError("Failed to sign up with Google. Please try again.")
+      setIsGoogleLoading(false)
     }
-  };
+  }
 
   const clearFieldError = (field: keyof typeof fieldErrors) => {
     if (fieldErrors[field]) {
-      setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
+      setFieldErrors((prev) => ({ ...prev, [field]: undefined }))
     }
-  };
+  }
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background px-4 py-8">
+      {/* Card Container */}
       <div className="w-full max-w-sm space-y-8">
-        {/* Header */}
-        <div className="text-center">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            Create an account
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Get started with your free account
+        {/* Logo & Header */}
+        <div className="flex flex-col items-center space-y-4 text-center">
+          <Logo className="h-20 w-20" />
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+              Welcome to
+            </h1>
+            <h2 className="text-2xl font-bold tracking-tight text-foreground">
+              Ask Cosmos.
+            </h2>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Create an account to get started.
           </p>
         </div>
 
-        {/* Form Container */}
-        <div className="rounded-lg border border-border bg-card p-6 shadow-sm sm:p-8">
+        {/* Form Card */}
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-lg sm:p-8">
           {/* Error Alert */}
           {error && (
             <div
-              className="mb-6 rounded-md bg-destructive/10 p-3 text-sm text-destructive"
+              className="mb-6 rounded-lg bg-destructive/10 p-3 text-sm text-destructive"
               role="alert"
             >
               {error}
             </div>
           )}
 
-          {/* Google Sign Up */}
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={handleGoogleSignUp}
-            isLoading={isGoogleLoading}
-            disabled={isLoading}
-          >
-            {!isGoogleLoading && <GoogleIcon className="h-5 w-5" />}
-            Continue with Google
-          </Button>
-
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">
-                Or continue with email
-              </span>
-            </div>
-          </div>
-
           {/* Email/Password Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               type="text"
-              label="Name"
-              placeholder="John Doe"
+              placeholder="Full name"
               value={name}
               onChange={(e) => {
-                setName(e.target.value);
-                clearFieldError("name");
+                setName(e.target.value)
+                clearFieldError("name")
               }}
+              icon={<User className="h-5 w-5" />}
               error={fieldErrors.name}
               disabled={isLoading || isGoogleLoading}
               autoComplete="name"
@@ -172,13 +147,13 @@ export function SignupPage({ onNavigateToLogin }: SignupPageProps) {
 
             <Input
               type="email"
-              label="Email"
-              placeholder="name@example.com"
+              placeholder="Email address"
               value={email}
               onChange={(e) => {
-                setEmail(e.target.value);
-                clearFieldError("email");
+                setEmail(e.target.value)
+                clearFieldError("email")
               }}
+              icon={<Mail className="h-5 w-5" />}
               error={fieldErrors.email}
               disabled={isLoading || isGoogleLoading}
               autoComplete="email"
@@ -186,50 +161,51 @@ export function SignupPage({ onNavigateToLogin }: SignupPageProps) {
 
             <Input
               type="password"
-              label="Password"
-              placeholder="••••••••"
+              placeholder="Password"
               value={password}
               onChange={(e) => {
-                setPassword(e.target.value);
-                clearFieldError("password");
+                setPassword(e.target.value)
+                clearFieldError("password")
               }}
+              icon={<Lock className="h-5 w-5" />}
               error={fieldErrors.password}
-              disabled={isLoading || isGoogleLoading}
-              autoComplete="new-password"
-            />
-
-            <Input
-              type="password"
-              label="Confirm Password"
-              placeholder="••••••••"
-              value={confirmPassword}
-              onChange={(e) => {
-                setConfirmPassword(e.target.value);
-                clearFieldError("confirmPassword");
-              }}
-              error={fieldErrors.confirmPassword}
               disabled={isLoading || isGoogleLoading}
               autoComplete="new-password"
             />
 
             <Button
               type="submit"
-              className="w-full"
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
               isLoading={isLoading}
               disabled={isGoogleLoading}
             >
-              Create account
+              Create Account
             </Button>
           </form>
 
+          {/* Google Sign Up */}
+          <div className="mt-4">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={handleGoogleSignUp}
+              isLoading={isGoogleLoading}
+              disabled={isLoading}
+            >
+              {!isGoogleLoading && <GoogleIcon className="h-5 w-5" />}
+              Continue with Google
+            </Button>
+          </div>
+
           {/* Terms */}
           <p className="mt-4 text-center text-xs text-muted-foreground">
-            By creating an account, you agree to our{" "}
+            By signing up, you agree to our{" "}
             <a
               href="/terms"
               className="font-medium text-primary underline-offset-4 hover:underline"
             >
-              Terms of Service
+              Terms
             </a>{" "}
             and{" "}
             <a
@@ -248,18 +224,18 @@ export function SignupPage({ onNavigateToLogin }: SignupPageProps) {
             type="button"
             onClick={onNavigateToLogin}
             className={cn(
-              "font-medium text-primary hover:text-primary/90",
+              "font-semibold text-primary hover:text-primary/90",
               "underline-offset-4 hover:underline",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
               "rounded-sm",
             )}
           >
-            Sign in
+            Log in
           </button>
         </p>
       </div>
     </div>
-  );
+  )
 }
 
-export default SignupPage;
+export default SignupPage

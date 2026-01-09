@@ -1,144 +1,128 @@
-import { useState } from "react";
-import { GoogleIcon } from "../components/icons/google";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { signIn } from "../lib/auth-client";
-import { cn } from "../lib/utils";
+import { Lock, Mail } from "lucide-react"
+import { useState } from "react"
+import { GoogleIcon } from "../components/icons/google"
+import { Logo } from "../components/icons/logo"
+import { Button } from "../components/ui/button"
+import { Input } from "../components/ui/input"
+import { signIn } from "../lib/auth-client"
+import { cn } from "../lib/utils"
 
 interface LoginPageProps {
-  onNavigateToSignup?: () => void;
+  onNavigateToSignup?: () => void
 }
 
 export function LoginPage({ onNavigateToSignup }: LoginPageProps) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<{
-    email?: string;
-    password?: string;
-  }>({});
+    email?: string
+    password?: string
+  }>({})
 
   const validateForm = () => {
-    const errors: { email?: string; password?: string } = {};
+    const errors: { email?: string; password?: string } = {}
 
     if (!email) {
-      errors.email = "Email is required";
+      errors.email = "Email is required"
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.email = "Please enter a valid email address";
+      errors.email = "Please enter a valid email address"
     }
 
     if (!password) {
-      errors.password = "Password is required";
+      errors.password = "Password is required"
     } else if (password.length < 8) {
-      errors.password = "Password must be at least 8 characters";
+      errors.password = "Password must be at least 8 characters"
     }
 
-    setFieldErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
+    setFieldErrors(errors)
+    return Object.keys(errors).length === 0
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+    e.preventDefault()
+    setError(null)
 
-    if (!validateForm()) return;
+    if (!validateForm()) return
 
-    setIsLoading(true);
+    setIsLoading(true)
     try {
       const { error } = await signIn.email({
         email,
         password,
-      });
+      })
 
       if (error) {
-        setError(error.message || "Invalid email or password");
+        setError(error.message || "Invalid email or password")
       }
     } catch {
-      setError("An unexpected error occurred. Please try again.");
+      setError("An unexpected error occurred. Please try again.")
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleGoogleSignIn = async () => {
-    setError(null);
-    setIsGoogleLoading(true);
+    setError(null)
+    setIsGoogleLoading(true)
     try {
       await signIn.social({
         provider: "google",
         callbackURL: window.location.origin,
-      });
+      })
     } catch {
-      setError("Failed to sign in with Google. Please try again.");
-      setIsGoogleLoading(false);
+      setError("Failed to sign in with Google. Please try again.")
+      setIsGoogleLoading(false)
     }
-  };
+  }
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background px-4 py-8">
+      {/* Card Container */}
       <div className="w-full max-w-sm space-y-8">
-        {/* Header */}
-        <div className="text-center">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            Welcome back
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Sign in to your account to continue
+        {/* Logo & Header */}
+        <div className="flex flex-col items-center space-y-4 text-center">
+          <Logo className="h-20 w-20" />
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+              Welcome to
+            </h1>
+            <h2 className="text-2xl font-bold tracking-tight text-foreground">
+              Ask Cosmos.
+            </h2>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Sign up or Log in to continue.
           </p>
         </div>
 
-        {/* Form Container */}
-        <div className="rounded-lg border border-border bg-card p-6 shadow-sm sm:p-8">
+        {/* Form Card */}
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-lg sm:p-8">
           {/* Error Alert */}
           {error && (
             <div
-              className="mb-6 rounded-md bg-destructive/10 p-3 text-sm text-destructive"
+              className="mb-6 rounded-lg bg-destructive/10 p-3 text-sm text-destructive"
               role="alert"
             >
               {error}
             </div>
           )}
 
-          {/* Google Sign In */}
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={handleGoogleSignIn}
-            isLoading={isGoogleLoading}
-            disabled={isLoading}
-          >
-            {!isGoogleLoading && <GoogleIcon className="h-5 w-5" />}
-            Continue with Google
-          </Button>
-
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">
-                Or continue with email
-              </span>
-            </div>
-          </div>
-
           {/* Email/Password Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               type="email"
-              label="Email"
-              placeholder="name@example.com"
+              placeholder="Email address"
               value={email}
               onChange={(e) => {
-                setEmail(e.target.value);
+                setEmail(e.target.value)
                 if (fieldErrors.email) {
-                  setFieldErrors((prev) => ({ ...prev, email: undefined }));
+                  setFieldErrors((prev) => ({ ...prev, email: undefined }))
                 }
               }}
+              icon={<Mail className="h-5 w-5" />}
               error={fieldErrors.email}
               disabled={isLoading || isGoogleLoading}
               autoComplete="email"
@@ -146,15 +130,15 @@ export function LoginPage({ onNavigateToSignup }: LoginPageProps) {
 
             <Input
               type="password"
-              label="Password"
-              placeholder="••••••••"
+              placeholder="Password"
               value={password}
               onChange={(e) => {
-                setPassword(e.target.value);
+                setPassword(e.target.value)
                 if (fieldErrors.password) {
-                  setFieldErrors((prev) => ({ ...prev, password: undefined }));
+                  setFieldErrors((prev) => ({ ...prev, password: undefined }))
                 }
               }}
+              icon={<Lock className="h-5 w-5" />}
               error={fieldErrors.password}
               disabled={isLoading || isGoogleLoading}
               autoComplete="current-password"
@@ -162,13 +146,38 @@ export function LoginPage({ onNavigateToSignup }: LoginPageProps) {
 
             <Button
               type="submit"
-              className="w-full"
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
               isLoading={isLoading}
               disabled={isGoogleLoading}
             >
-              Sign in
+              Continue with Email
             </Button>
           </form>
+
+          {/* Google Sign In */}
+          <div className="mt-4">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={handleGoogleSignIn}
+              isLoading={isGoogleLoading}
+              disabled={isLoading}
+            >
+              {!isGoogleLoading && <GoogleIcon className="h-5 w-5" />}
+              Continue with Google
+            </Button>
+          </div>
+
+          {/* Forgot Password */}
+          <div className="mt-4 text-center">
+            <button
+              type="button"
+              className="text-sm text-muted-foreground hover:text-foreground"
+            >
+              Forgot password?
+            </button>
+          </div>
         </div>
 
         {/* Sign up link */}
@@ -178,7 +187,7 @@ export function LoginPage({ onNavigateToSignup }: LoginPageProps) {
             type="button"
             onClick={onNavigateToSignup}
             className={cn(
-              "font-medium text-primary hover:text-primary/90",
+              "font-semibold text-primary hover:text-primary/90",
               "underline-offset-4 hover:underline",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
               "rounded-sm",
@@ -189,7 +198,7 @@ export function LoginPage({ onNavigateToSignup }: LoginPageProps) {
         </p>
       </div>
     </div>
-  );
+  )
 }
 
-export default LoginPage;
+export default LoginPage
