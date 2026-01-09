@@ -5,7 +5,8 @@
         "**",
         "!!**/dist",
         "!!**/node_modules",
-        "!!**/src/generated"
+        "!!**/src/generated",
+        "!!**/*.css"
       ]
     },
     "linter": { "enabled": true },
@@ -17,6 +18,17 @@
     "javascript": {
       "parser": {
         "unsafeParameterDecoratorsEnabled": true
+      }
+    },
+    "css": {
+      "parser": {
+        "cssModules": true
+      },
+      "linter": {
+        "enabled": false
+      },
+      "formatter": {
+        "enabled": false
       }
     },
     "assist": {

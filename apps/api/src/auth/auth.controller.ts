@@ -7,7 +7,7 @@ import { auth } from "./auth";
 export class AuthController {
   private readonly handler = toNodeHandler(auth);
 
-  @All("*")
+  @All("*path")
   async handle(@Req() req: Request, @Res() res: Response) {
     return this.handler(req, res);
   }
