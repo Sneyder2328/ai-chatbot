@@ -38,13 +38,13 @@ export function ChatsPanel() {
         New Chat
       </Button>
 
-      {chats.length === 0 ? (
+      {chats?.length === 0 ? (
         <p className="text-center text-sm text-muted-foreground">
           No chats yet. Create one to get started!
         </p>
       ) : (
         <ul className="flex flex-col gap-2">
-          {chats.map((chat) => (
+          {chats?.map((chat) => (
             <li
               key={chat.id}
               className="rounded-md border border-border bg-card p-3 transition-colors hover:bg-accent"
