@@ -16,6 +16,9 @@
       "indentWidth": 2
     },
     "javascript": {
+      "formatter": {
+        "semicolons": "asNeeded"
+      },
       "parser": {
         "unsafeParameterDecoratorsEnabled": true
       }

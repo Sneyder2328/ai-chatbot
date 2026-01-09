@@ -1,6 +1,6 @@
+import { protectedProcedure, publicProcedure, router } from "@ai-chatbot/trpc";
 import { z } from "zod";
 import { chatRouter } from "./routers/chat";
-import { protectedProcedure, publicProcedure, router } from "./trpc";
 
 export const appRouter = router({
   health: publicProcedure.query(() => "ok"),

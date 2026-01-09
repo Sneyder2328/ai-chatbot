@@ -23,6 +23,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@ai-chatbot/trpc':
+        specifier: workspace:*
+        version: link:../../packages/trpc
       '@nestjs/common':
         specifier: ^11.1.11
         version: 11.1.11(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -112,6 +115,9 @@ importers:
         specifier: ^3.4.0
         version: 3.4.0
     devDependencies:
+      '@ai-chatbot/api':
+        specifier: workspace:*
+        version: link:../api
       '@tailwindcss/typography':
         specifier: ^0.5.19
         version: 0.5.19(tailwindcss@4.1.18)
@@ -170,9 +176,6 @@ importers:
       db:
         specifier: workspace:*
         version: link:../db
-      zod:
-        specifier: ^4.3.5
-        version: 4.3.5
     devDependencies:
       '@ai-chatbot/tsconfig':
         specifier: workspace:*

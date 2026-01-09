@@ -1,4 +1,2 @@
-export type { AuthUser, TrpcContext } from "./context";
-export type { AppRouter } from "./router";
-export { appRouter } from "./router";
-export { protectedProcedure, publicProcedure } from "./trpc";
+export type { AuthUser, ProtectedContext, TrpcContext } from "./context"
+export { protectedProcedure, publicProcedure, router } from "./trpc"

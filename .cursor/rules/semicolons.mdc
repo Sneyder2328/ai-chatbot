@@ -1,0 +1,28 @@
+---
+alwaysApply: true
+---
+
+# Semicolon Style
+
+Avoid semicolons in JavaScript/TypeScript code. Only use them when strictly necessary to prevent Automatic Semicolon Insertion (ASI) issues, such as:
+
+- Lines starting with `(`, `[`, `/`, `+`, `-`, or a template literal
+- IIFE expressions
+
+**Good:**
+```typescript
+const foo = "bar"
+const arr = [1, 2, 3]
+function greet() {
+  console.log("hello")
+}
+```
+
+**Bad:**
+```typescript
+const foo = "bar";
+const arr = [1, 2, 3];
+function greet() {
+  console.log("hello");
+}
+```

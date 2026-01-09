@@ -2,8 +2,15 @@
   "name": "@ai-chatbot/api",
   "version": "1.0.0",
   "main": "dist/src/main",
+  "exports": {
+    "./trpc": {
+      "types": "./dist/src/trpc/index.d.ts",
+      "import": "./dist/src/trpc/index.js",
+      "require": "./dist/src/trpc/index.js"
+    }
+  },
   "scripts": {
-    "predev": "pnpm --filter db build",
+    "predev": "pnpm --filter db build && pnpm --filter @ai-chatbot/trpc build",
     "dev": "nest start --watch",
     "build": "nest build",
     "start": "nest start",
@@ -17,6 +24,7 @@
   "license": "ISC",
   "packageManager": "pnpm@10.24.0",
   "dependencies": {
+    "@ai-chatbot/trpc": "workspace:*",
     "@nestjs/common": "^11.1.11",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.1.11",

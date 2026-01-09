@@ -1,108 +1,108 @@
-import { Lock, Mail, User } from "lucide-react";
-import { useState } from "react";
-import { GoogleIcon } from "../components/icons/google";
-import { Logo } from "../components/icons/logo";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { signIn, signUp } from "../lib/auth-client";
-import { cn } from "../lib/utils";
+import { Lock, Mail, User } from "lucide-react"
+import { useState } from "react"
+import { GoogleIcon } from "../components/icons/google"
+import { Logo } from "../components/icons/logo"
+import { Button } from "../components/ui/button"
+import { Input } from "../components/ui/input"
+import { signIn, signUp } from "../lib/auth-client"
+import { cn } from "../lib/utils"
 
 interface SignupPageProps {
-  onNavigateToLogin?: () => void;
+  onNavigateToLogin?: () => void
 }
 
 export function SignupPage({ onNavigateToLogin }: SignupPageProps) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<{
-    name?: string;
-    email?: string;
-    password?: string;
-    confirmPassword?: string;
-  }>({});
+    name?: string
+    email?: string
+    password?: string
+    confirmPassword?: string
+  }>({})
 
   const validateForm = () => {
     const errors: {
-      name?: string;
-      email?: string;
-      password?: string;
-      confirmPassword?: string;
-    } = {};
+      name?: string
+      email?: string
+      password?: string
+      confirmPassword?: string
+    } = {}
 
     if (!name.trim()) {
-      errors.name = "Name is required";
+      errors.name = "Name is required"
     } else if (name.trim().length < 2) {
-      errors.name = "Name must be at least 2 characters";
+      errors.name = "Name must be at least 2 characters"
     }
 
     if (!email) {
-      errors.email = "Email is required";
+      errors.email = "Email is required"
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.email = "Please enter a valid email address";
+      errors.email = "Please enter a valid email address"
     }
 
     if (!password) {
-      errors.password = "Password is required";
+      errors.password = "Password is required"
     } else if (password.length < 8) {
-      errors.password = "Password must be at least 8 characters";
+      errors.password = "Password must be at least 8 characters"
     }
 
     if (confirmPassword !== password) {
-      errors.confirmPassword = "Passwords do not match";
+      errors.confirmPassword = "Passwords do not match"
     }
 
-    setFieldErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
+    setFieldErrors(errors)
+    return Object.keys(errors).length === 0
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+    e.preventDefault()
+    setError(null)
 
-    if (!validateForm()) return;
+    if (!validateForm()) return
 
-    setIsLoading(true);
+    setIsLoading(true)
     try {
       const { error } = await signUp.email({
         email,
         password,
         name: name.trim(),
-      });
+      })
 
       if (error) {
-        setError(error.message || "Failed to create account");
+        setError(error.message || "Failed to create account")
       }
     } catch {
-      setError("An unexpected error occurred. Please try again.");
+      setError("An unexpected error occurred. Please try again.")
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleGoogleSignUp = async () => {
-    setError(null);
-    setIsGoogleLoading(true);
+    setError(null)
+    setIsGoogleLoading(true)
     try {
       await signIn.social({
         provider: "google",
         callbackURL: window.location.origin,
-      });
+      })
     } catch {
-      setError("Failed to sign up with Google. Please try again.");
-      setIsGoogleLoading(false);
+      setError("Failed to sign up with Google. Please try again.")
+      setIsGoogleLoading(false)
     }
-  };
+  }
 
   const clearFieldError = (field: keyof typeof fieldErrors) => {
     if (fieldErrors[field]) {
-      setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
+      setFieldErrors((prev) => ({ ...prev, [field]: undefined }))
     }
-  };
+  }
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background px-4 py-8">
@@ -143,8 +143,8 @@ export function SignupPage({ onNavigateToLogin }: SignupPageProps) {
               placeholder="Full name"
               value={name}
               onChange={(e) => {
-                setName(e.target.value);
-                clearFieldError("name");
+                setName(e.target.value)
+                clearFieldError("name")
               }}
               icon={<User className="h-5 w-5" />}
               error={fieldErrors.name}
@@ -157,8 +157,8 @@ export function SignupPage({ onNavigateToLogin }: SignupPageProps) {
               placeholder="Email address"
               value={email}
               onChange={(e) => {
-                setEmail(e.target.value);
-                clearFieldError("email");
+                setEmail(e.target.value)
+                clearFieldError("email")
               }}
               icon={<Mail className="h-5 w-5" />}
               error={fieldErrors.email}
@@ -171,8 +171,8 @@ export function SignupPage({ onNavigateToLogin }: SignupPageProps) {
               placeholder="Password"
               value={password}
               onChange={(e) => {
-                setPassword(e.target.value);
-                clearFieldError("password");
+                setPassword(e.target.value)
+                clearFieldError("password")
               }}
               icon={<Lock className="h-5 w-5" />}
               error={fieldErrors.password}
@@ -185,8 +185,8 @@ export function SignupPage({ onNavigateToLogin }: SignupPageProps) {
               placeholder="Confirm Password"
               value={confirmPassword}
               onChange={(e) => {
-                setConfirmPassword(e.target.value);
-                clearFieldError("confirmPassword");
+                setConfirmPassword(e.target.value)
+                clearFieldError("confirmPassword")
               }}
               icon={<Lock className="h-5 w-5" />}
               error={fieldErrors.confirmPassword}
@@ -256,7 +256,7 @@ export function SignupPage({ onNavigateToLogin }: SignupPageProps) {
         </p>
       </div>
     </div>
-  );
+  )
 }
 
-export default SignupPage;
+export default SignupPage

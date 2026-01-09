@@ -1,8 +1,8 @@
-import type { PrismaClient } from "db";
+import type { PrismaClient } from "db"
 
 export type AuthUser = {
-  id: string;
-};
+  id: string
+}
 
 export type TrpcContext = {
   /**
@@ -10,13 +10,13 @@ export type TrpcContext = {
    *
    * Set this in your server adapter's context factory.
    */
-  user?: AuthUser | null;
+  user?: AuthUser | null
   /**
    * Database client
    */
-  db: PrismaClient;
-};
+  db: PrismaClient
+}
 
 export type ProtectedContext = Omit<TrpcContext, "user"> & {
-  user: AuthUser;
-};
+  user: AuthUser
+}

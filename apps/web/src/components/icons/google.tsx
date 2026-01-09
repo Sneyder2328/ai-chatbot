@@ -1,7 +1,7 @@
-import { cn } from "../../lib/utils";
+import { cn } from "../../lib/utils"
 
 interface GoogleIconProps {
-  className?: string;
+  className?: string
 }
 
 export function GoogleIcon({ className }: GoogleIconProps) {
@@ -28,5 +28,5 @@ export function GoogleIcon({ className }: GoogleIconProps) {
         fill="#EA4335"
       />
     </svg>
-  );
+  )
 }
