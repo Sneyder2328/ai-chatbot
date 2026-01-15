@@ -1,0 +1,31 @@
+---
+globs: apps/api/src/trpc/routers/*.ts
+alwaysApply: false
+---
+# Timestamp ISO String Format
+
+When returning Date objects from tRPC procedures, always convert them to ISO strings using `.toISOString()`.
+
+This ensures consistent timestamp formatting across the API and prevents serialization issues with Date objects.
+
+## Pattern
+
+```typescript
+// Good - convert Date to ISO string
+return {
+  ...entity,
+  createdAt: entity.createdAt.toISOString(),
+  updatedAt: entity.updatedAt.toISOString(),
+}
+
+// Bad - return raw Date object
+return {
+  ...entity,
+  createdAt: entity.createdAt,
+  updatedAt: entity.updatedAt,
+}
+```
+
+## Examples
+
+See `apps/api/src/trpc/routers/chat.ts` and `apps/api/src/trpc/routers/messages.ts` for correct implementations.

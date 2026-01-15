@@ -1,6 +1,7 @@
 import { protectedProcedure, publicProcedure, router } from "@ai-chatbot/trpc"
 import { z } from "zod"
 import { chatRouter } from "./routers/chat"
+import { messageRouter } from "./routers/messages"
 
 export const appRouter = router({
   health: publicProcedure.query(() => "ok"),
@@ -13,6 +14,7 @@ export const appRouter = router({
     .query(({ input }) => input),
   me: protectedProcedure.query(({ ctx }) => ctx.user),
   chat: chatRouter,
+  message: messageRouter,
 })
 
 export type AppRouter = typeof appRouter

@@ -6,7 +6,8 @@
         "!!**/dist",
         "!!**/node_modules",
         "!!**/src/generated",
-        "!!**/*.css"
+        "!!**/*.css",
+        "!!**/*.gen.ts"
       ]
     },
     "linter": { "enabled": true },
