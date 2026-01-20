@@ -53,18 +53,28 @@ function toModelMessages(
   const result: ModelMessage[] = []
 
   for (const message of messages) {
-    if (message.role === "USER") {
-      result.push({ role: "user", content: message.content })
-      continue
-    }
-
-    if (message.role === "ASSISTANT") {
-      result.push({ role: "assistant", content: message.content })
-      continue
-    }
-
-    if (message.role === "SYSTEM") {
-      result.push({ role: "system", content: message.content })
+    switch (message.role) {
+      case "USER":
+        result.push({ role: "user", content: message.content })
+        break
+      case "ASSISTANT":
+        result.push({ role: "assistant", content: message.content })
+        break
+      case "SYSTEM":
+        result.push({ role: "system", content: message.content })
+        break
+      case "TOOL":
+        // Tool messages store JSON-encoded tool results in content
+        // Parse and convert to the AI SDK's expected format
+        try {
+          const toolResults = JSON.parse(message.content)
+          result.push({ role: "tool", content: toolResults })
+        } catch {
+          // If parsing fails, skip the malformed tool message
+          // This prevents breaking the conversation context
+          console.warn("Failed to parse tool message content as JSON")
+        }
+        break
     }
   }
 
