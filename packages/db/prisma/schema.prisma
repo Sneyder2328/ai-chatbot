@@ -73,6 +73,8 @@ model Chat {
   id            String    @id @default(uuid(7)) @db.Uuid
   userId        String    @map("user_id")
   title         String
+  pinnedAt      DateTime? @map("pinned_at") @db.Timestamptz
+  deletedAt     DateTime? @map("deleted_at") @db.Timestamptz
   lastMessageAt DateTime? @map("last_message_at") @db.Timestamptz
   createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz
@@ -81,6 +83,9 @@ model Chat {
   messages      Message[]
 
   @@index([userId])
+  @@index([userId, pinnedAt])
+  @@index([userId, lastMessageAt])
+  @@index([userId, deletedAt])
   @@map("chats")
 }
 
@@ -91,11 +96,22 @@ enum MessageRole {
   TOOL
 }
 
+enum MessageStatus {
+  QUEUED
+  STREAMING
+  COMPLETED
+  FAILED
+}
+
 model Message {
   id        String      @id @default(uuid(7)) @db.Uuid
   chatId    String      @map("chat_id") @db.Uuid
   role      MessageRole
   content   String
+  providerId String?     @map("provider_id")
+  modelId    String?     @map("model_id")
+  status     MessageStatus?
+  errorMessage String?   @map("error_message")
   createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime    @updatedAt @map("updated_at") @db.Timestamptz
 

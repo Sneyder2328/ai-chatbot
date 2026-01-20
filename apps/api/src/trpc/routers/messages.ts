@@ -7,6 +7,10 @@ const messageSelect = {
   chatId: true,
   role: true,
   content: true,
+  providerId: true,
+  modelId: true,
+  status: true,
+  errorMessage: true,
   createdAt: true,
   updatedAt: true,
 } as const
@@ -24,6 +28,7 @@ export const messageRouter = router({
         where: {
           id: input.chatId,
           userId: ctx.user.id,
+          deletedAt: null,
         },
       })
 
@@ -64,6 +69,7 @@ export const messageRouter = router({
         where: {
           id: input.chatId,
           userId: ctx.user.id,
+          deletedAt: null,
         },
       })
 
@@ -102,6 +108,42 @@ export const messageRouter = router({
         ...result,
         createdAt: result.createdAt.toISOString(),
         updatedAt: result.updatedAt.toISOString(),
+      }
+    }),
+
+  createInNewChat: protectedProcedure
+    .input(
+      z.object({
+        content: z.string().min(1),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const now = new Date()
+
+      const message = await ctx.db.$transaction(async (tx) => {
+        const chat = await tx.chat.create({
+          data: {
+            userId: ctx.user.id,
+            title: "New chat",
+            lastMessageAt: now,
+          },
+          select: { id: true },
+        })
+
+        return tx.message.create({
+          data: {
+            chatId: chat.id,
+            role: "USER",
+            content: input.content,
+          },
+          select: messageSelect,
+        })
+      })
+
+      return {
+        ...message,
+        createdAt: message.createdAt.toISOString(),
+        updatedAt: message.updatedAt.toISOString(),
       }
     }),
 })

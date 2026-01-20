@@ -27,6 +27,11 @@ const rawEnvSchema = z.object({
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
 
+  OPENROUTER_API_KEY: z.string().min(1),
+  OPENROUTER_BASE_URL: z.string().url().optional(),
+  OPENROUTER_APP_NAME: z.string().min(1).optional(),
+  OPENROUTER_APP_URL: z.string().url().optional(),
+
   /**
    * Set to true when behind a reverse proxy (Fly/Render/NGINX).
    * Avoid enabling unless you know you need it.
@@ -107,4 +112,9 @@ export const env = {
 
   googleClientId: raw.GOOGLE_CLIENT_ID,
   googleClientSecret: raw.GOOGLE_CLIENT_SECRET,
+
+  openrouterApiKey: raw.OPENROUTER_API_KEY,
+  openrouterBaseUrl: raw.OPENROUTER_BASE_URL ?? "https://openrouter.ai/api/v1",
+  openrouterAppName: raw.OPENROUTER_APP_NAME,
+  openrouterAppUrl: raw.OPENROUTER_APP_URL,
 } as const

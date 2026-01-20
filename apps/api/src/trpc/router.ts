@@ -1,5 +1,6 @@
 import { protectedProcedure, publicProcedure, router } from "@ai-chatbot/trpc"
 import { z } from "zod"
+import { aiRouter } from "./routers/ai"
 import { chatRouter } from "./routers/chat"
 import { messageRouter } from "./routers/messages"
 
@@ -13,6 +14,7 @@ export const appRouter = router({
     )
     .query(({ input }) => input),
   me: protectedProcedure.query(({ ctx }) => ctx.user),
+  ai: aiRouter,
   chat: chatRouter,
   message: messageRouter,
 })
