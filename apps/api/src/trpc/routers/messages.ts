@@ -1,6 +1,16 @@
 import { protectedProcedure, router } from "@ai-chatbot/trpc"
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
+import {
+  type AiModelId,
+  type AiProviderId,
+  DEFAULT_AI_MODEL_ID,
+  DEFAULT_AI_PROVIDER_ID,
+  getAiModelCatalogEntry,
+  isAiModelId,
+  isAiProviderId,
+  listAiModelsForProvider,
+} from "../../ai"
 
 const messageSelect = {
   id: true,
@@ -14,6 +24,67 @@ const messageSelect = {
   createdAt: true,
   updatedAt: true,
 } as const
+
+function resolveModelSelection(input: {
+  providerId?: string | null
+  modelId?: string | null
+}): {
+  providerId: AiProviderId
+  modelId: AiModelId
+} {
+  const providerIdRaw = input.providerId ?? undefined
+  const modelIdRaw = input.modelId ?? undefined
+
+  const maybeModelId = modelIdRaw
+    ? isAiModelId(modelIdRaw)
+      ? modelIdRaw
+      : (() => {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Invalid modelId",
+          })
+        })()
+    : null
+
+  const maybeProviderId = providerIdRaw
+    ? isAiProviderId(providerIdRaw)
+      ? providerIdRaw
+      : (() => {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Invalid providerId",
+          })
+        })()
+    : null
+
+  if (maybeModelId) {
+    const entry = getAiModelCatalogEntry(maybeModelId)
+    if (maybeProviderId && entry.providerId !== maybeProviderId) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Model is not available for provider",
+      })
+    }
+
+    return { providerId: entry.providerId, modelId: maybeModelId }
+  }
+
+  const providerId = maybeProviderId ?? DEFAULT_AI_PROVIDER_ID
+  const defaultEntry = getAiModelCatalogEntry(DEFAULT_AI_MODEL_ID)
+  if (defaultEntry.providerId === providerId) {
+    return { providerId, modelId: DEFAULT_AI_MODEL_ID }
+  }
+
+  const fallbackModelId = listAiModelsForProvider(providerId)[0]?.id
+  if (!fallbackModelId) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: `No AI models available for provider "${providerId}"`,
+    })
+  }
+
+  return { providerId, modelId: fallbackModelId }
+}
 
 export const messageRouter = router({
   list: protectedProcedure
@@ -61,6 +132,8 @@ export const messageRouter = router({
       z.object({
         chatId: z.string().uuid(),
         content: z.string().min(1),
+        providerId: z.string().optional(),
+        modelId: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -80,6 +153,8 @@ export const messageRouter = router({
         })
       }
 
+      const { providerId, modelId } = resolveModelSelection(input)
+
       // Create the message and update chat's lastMessageAt in a transaction
       const result = await ctx.db.$transaction(async (tx) => {
         const message = await tx.message.create({
@@ -87,6 +162,8 @@ export const messageRouter = router({
             chatId: input.chatId,
             role: "USER",
             content: input.content,
+            providerId,
+            modelId,
           },
           select: messageSelect,
         })
@@ -115,10 +192,13 @@ export const messageRouter = router({
     .input(
       z.object({
         content: z.string().min(1),
+        providerId: z.string().optional(),
+        modelId: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const now = new Date()
+      const { providerId, modelId } = resolveModelSelection(input)
 
       const message = await ctx.db.$transaction(async (tx) => {
         const chat = await tx.chat.create({
@@ -135,6 +215,8 @@ export const messageRouter = router({
             chatId: chat.id,
             role: "USER",
             content: input.content,
+            providerId,
+            modelId,
           },
           select: messageSelect,
         })

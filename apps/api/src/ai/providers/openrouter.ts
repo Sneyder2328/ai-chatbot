@@ -23,15 +23,18 @@ function buildOpenRouterHeaders(): Record<string, string> | undefined {
 async function getOpenRouterProvider(): Promise<OpenRouterProvider> {
   if (!openRouterProviderPromise) {
     openRouterProviderPromise = (async () => {
-      const { createOpenAI } = await import("@ai-sdk/openai")
+      const { createOpenAICompatible } = await import(
+        "@ai-sdk/openai-compatible"
+      )
 
-      const openai = createOpenAI({
+      const openrouter = createOpenAICompatible({
+        name: "openrouter",
         apiKey: env.openrouterApiKey,
         baseURL: env.openrouterBaseUrl,
         headers: buildOpenRouterHeaders(),
       })
 
-      return (modelId: string) => openai(modelId)
+      return (modelId: string) => openrouter.chatModel(modelId)
     })()
   }
 

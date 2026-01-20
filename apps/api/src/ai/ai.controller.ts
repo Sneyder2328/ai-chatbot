@@ -19,8 +19,10 @@ import {
   DEFAULT_AI_MODEL_ID,
   DEFAULT_AI_PROVIDER_ID,
   getAiLanguageModel,
+  getAiModelCatalogEntry,
   isAiModelId,
   isAiProviderId,
+  listAiModelsForProvider,
 } from "./index"
 
 const streamQuerySchema = z.object({
@@ -63,18 +65,15 @@ function toModelMessages(
       case "SYSTEM":
         result.push({ role: "system", content: message.content })
         break
-      case "TOOL":
-        // Tool messages store JSON-encoded tool results in content
-        // Parse and convert to the AI SDK's expected format
-        try {
-          const toolResults = JSON.parse(message.content)
-          result.push({ role: "tool", content: toolResults })
-        } catch {
-          // If parsing fails, skip the malformed tool message
-          // This prevents breaking the conversation context
-          console.warn("Failed to parse tool message content as JSON")
-        }
-        break
+      // Tool messages are disabled for now - they require proper tool setup
+      // case "TOOL":
+      //   try {
+      //     const toolResults = JSON.parse(message.content)
+      //     result.push({ role: "tool", content: toolResults })
+      //   } catch {
+      //     console.warn("Failed to parse tool message content as JSON")
+      //   }
+      //   break
     }
   }
 
@@ -98,22 +97,7 @@ export class AiController {
     const { chatId, userMessageId } = parsedQuery.data
 
     const providerIdRaw = parsedQuery.data.providerId
-    const providerId: AiProviderId = providerIdRaw
-      ? isAiProviderId(providerIdRaw)
-        ? providerIdRaw
-        : (() => {
-            throw new BadRequestException("Invalid providerId")
-          })()
-      : DEFAULT_AI_PROVIDER_ID
-
     const modelIdRaw = parsedQuery.data.modelId
-    const modelId: AiModelId = modelIdRaw
-      ? isAiModelId(modelIdRaw)
-        ? modelIdRaw
-        : (() => {
-            throw new BadRequestException("Invalid modelId")
-          })()
-      : DEFAULT_AI_MODEL_ID
 
     const userId = req.session?.user.id
     if (!userId) {
@@ -144,11 +128,71 @@ export class AiController {
       select: {
         id: true,
         createdAt: true,
+        providerId: true,
+        modelId: true,
       },
     })
 
     if (!userMessage) {
       throw new NotFoundException("User message not found")
+    }
+
+    let modelId: AiModelId | null = null
+    if (modelIdRaw) {
+      if (!isAiModelId(modelIdRaw)) {
+        throw new BadRequestException("Invalid modelId")
+      }
+      modelId = modelIdRaw
+    } else if (userMessage.modelId && isAiModelId(userMessage.modelId)) {
+      modelId = userMessage.modelId
+    }
+
+    let providerId: AiProviderId | null = null
+    if (providerIdRaw) {
+      if (!isAiProviderId(providerIdRaw)) {
+        throw new BadRequestException("Invalid providerId")
+      }
+      providerId = providerIdRaw
+    } else if (
+      userMessage.providerId &&
+      isAiProviderId(userMessage.providerId)
+    ) {
+      providerId = userMessage.providerId
+    }
+
+    if (modelId) {
+      const entry = getAiModelCatalogEntry(modelId)
+
+      if (providerId && entry.providerId !== providerId) {
+        // If the caller explicitly provided both and they conflict, it's a request error.
+        if (providerIdRaw && modelIdRaw) {
+          throw new BadRequestException(
+            `Model "${modelId}" is not available for provider "${providerId}"`,
+          )
+        }
+      }
+
+      providerId = entry.providerId
+    } else {
+      providerId = providerId ?? DEFAULT_AI_PROVIDER_ID
+
+      const defaultEntry = getAiModelCatalogEntry(DEFAULT_AI_MODEL_ID)
+      if (defaultEntry.providerId === providerId) {
+        modelId = DEFAULT_AI_MODEL_ID
+      } else {
+        const fallbackModelId = listAiModelsForProvider(providerId)[0]?.id
+        if (!fallbackModelId) {
+          throw new BadRequestException(
+            `No AI models available for provider "${providerId}"`,
+          )
+        }
+
+        modelId = fallbackModelId
+      }
+    }
+
+    if (!providerId || !modelId) {
+      throw new BadRequestException("Failed to resolve provider/model")
     }
 
     const contextMessages = await prisma.message.findMany({
@@ -239,6 +283,8 @@ export class AiController {
       const result = await streamText({
         model,
         messages: toModelMessages(contextMessages.reverse()),
+        toolChoice: "none",
+        tools: {},
         abortSignal: abortController.signal,
       })
 

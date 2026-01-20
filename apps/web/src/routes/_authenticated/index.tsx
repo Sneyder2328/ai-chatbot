@@ -12,13 +12,6 @@ export const Route = createFileRoute("/_authenticated/")({
   component: IndexPage,
 })
 
-type AutostartState = {
-  chatId: string
-  userMessageId: string
-  providerId: string
-  modelId: string
-}
-
 function getNewChatNonce(state: unknown) {
   if (!state || typeof state !== "object") return "initial"
   const value = (state as { newChatNonce?: unknown }).newChatNonce
@@ -45,13 +38,18 @@ function IndexPage() {
     [location.state],
   )
 
-  const [providerId, setProviderId] = useState<string>(defaultProviderId)
-  const [modelId, setModelId] = useState<string>(defaultModelId)
+  const [providerId, setProviderId] = useState<string | null>(null)
+  const [modelId, setModelId] = useState<string | null>(null)
 
+  // Initialize provider/model from catalog defaults once loaded
   useEffect(() => {
-    // Reset the composer when "New Chat" is clicked (even if already on "/")
-    void newChatNonce
+    setProviderId((prev) => prev ?? defaultProviderId)
+    setModelId((prev) => prev ?? defaultModelId)
+  }, [defaultProviderId, defaultModelId])
 
+  // Reset the composer when "New Chat" is clicked (even if already on "/")
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Intentionally only reset when newChatNonce changes, not when defaults change
+  useEffect(() => {
     setProviderId(defaultProviderId)
     setModelId(defaultModelId)
     setErrorMessage(null)
@@ -61,9 +59,13 @@ function IndexPage() {
       textarea.value = ""
       textarea.style.height = "auto"
     }
-  }, [defaultModelId, defaultProviderId, newChatNonce])
+  }, [newChatNonce])
 
   const createFirstMessage = trpc.message.createInNewChat.useMutation()
+
+  // Use effective values that fall back to defaults when state is null
+  const effectiveProviderId = providerId ?? defaultProviderId
+  const effectiveModelId = modelId ?? defaultModelId
 
   const handleSubmit = () => {
     const content = textareaRef.current?.value.trim()
@@ -72,7 +74,11 @@ function IndexPage() {
     setErrorMessage(null)
 
     createFirstMessage
-      .mutateAsync({ content })
+      .mutateAsync({
+        content,
+        providerId: effectiveProviderId,
+        modelId: effectiveModelId,
+      })
       .then((newMessage) => {
         const chatId = newMessage.chatId
 
@@ -84,17 +90,9 @@ function IndexPage() {
           textareaRef.current.style.height = "auto"
         }
 
-        const autostart: AutostartState = {
-          chatId,
-          userMessageId: newMessage.id,
-          providerId,
-          modelId,
-        }
-
         navigate({
           to: "/chats/$chatId",
           params: { chatId },
-          state: { autostart },
         })
       })
       .catch((error) => {
@@ -139,7 +137,7 @@ function IndexPage() {
           <div className="flex flex-wrap items-center gap-2">
             <select
               className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground"
-              value={providerId}
+              value={effectiveProviderId}
               onChange={(e) => setProviderId(e.target.value)}
               disabled={
                 createFirstMessage.isPending ||
@@ -159,7 +157,7 @@ function IndexPage() {
 
             <select
               className="h-9 min-w-[11rem] flex-1 rounded-md border border-input bg-background px-3 text-sm text-foreground"
-              value={modelId}
+              value={effectiveModelId}
               onChange={(e) => setModelId(e.target.value)}
               disabled={
                 createFirstMessage.isPending ||
@@ -168,7 +166,7 @@ function IndexPage() {
             >
               {(aiCatalog?.models?.length ?? 0) > 0 ? (
                 aiCatalog?.models
-                  .filter((m) => m.providerId === providerId)
+                  .filter((m) => m.providerId === effectiveProviderId)
                   .map((model) => (
                     <option key={model.id} value={model.id}>
                       {model.label}

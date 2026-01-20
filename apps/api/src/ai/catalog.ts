@@ -4,6 +4,27 @@ export type AiProviderId = (typeof AI_PROVIDER_IDS)[number]
 
 export const AI_MODELS = [
   {
+    id: "openai/gpt-4o-mini",
+    providerId: "openrouter",
+    label: "GPT-4o mini",
+    supportsVision: true,
+    supportsImageGen: false,
+  },
+  {
+    id: "anthropic/claude-3.5-sonnet",
+    providerId: "openrouter",
+    label: "Claude 3.5 Sonnet",
+    supportsVision: true,
+    supportsImageGen: false,
+  },
+  {
+    id: "meta-llama/llama-3.1-70b-instruct",
+    providerId: "openrouter",
+    label: "Llama 3.1 70B Instruct",
+    supportsVision: false,
+    supportsImageGen: false,
+  },
+  {
     id: "z-ai/glm-4.7-flash",
     providerId: "openrouter",
     label: "GLM-4.7 Flash",

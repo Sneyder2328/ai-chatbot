@@ -1,8 +1,4 @@
-import {
-  createFileRoute,
-  useLocation,
-  useNavigate,
-} from "@tanstack/react-router"
+import { createFileRoute } from "@tanstack/react-router"
 import { Send } from "lucide-react"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Button } from "../../components/ui/button"
@@ -30,48 +26,18 @@ type StreamState =
     }
   | null
 
-type AutostartState = {
-  chatId: string
+type PendingUserMessage = {
   userMessageId: string
   providerId: string
   modelId: string
-}
-
-function getAutostartState(
-  state: unknown,
-  chatId: string,
-): AutostartState | null {
-  if (!state || typeof state !== "object") return null
-
-  const autostart = (state as { autostart?: unknown }).autostart
-  if (!autostart || typeof autostart !== "object") return null
-
-  const parsed = autostart as Partial<AutostartState>
-  if (parsed.chatId !== chatId) return null
-  if (typeof parsed.userMessageId !== "string") return null
-  if (typeof parsed.providerId !== "string") return null
-  if (typeof parsed.modelId !== "string") return null
-
-  return {
-    chatId: parsed.chatId,
-    userMessageId: parsed.userMessageId,
-    providerId: parsed.providerId,
-    modelId: parsed.modelId,
-  }
-}
+} | null
 
 function ChatView() {
   const { chatId } = Route.useParams()
-  const location = useLocation()
-  const navigate = useNavigate()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const eventSourceRef = useRef<EventSource | null>(null)
   const [streamState, setStreamState] = useState<StreamState>(null)
-
-  const autostart = useMemo(
-    () => getAutostartState(location.state, chatId),
-    [chatId, location.state],
-  )
+  const isStreaming = streamState?.status === "STREAMING"
 
   const {
     data: messages,
@@ -100,17 +66,44 @@ function ChatView() {
   const [modelId, setModelId] = useState<string>(defaultModelId)
 
   useEffect(() => {
-    if (autostart) {
-      setProviderId(autostart.providerId)
-      setModelId(autostart.modelId)
-      return
-    }
-
     setProviderId((prev) => prev || defaultProviderId)
     setModelId((prev) => prev || defaultModelId)
-  }, [autostart, defaultModelId, defaultProviderId])
+  }, [defaultModelId, defaultProviderId])
 
-  const isStreaming = streamState?.status === "STREAMING"
+  const pendingUserMessage = useMemo<PendingUserMessage>(() => {
+    if (!messages || messages.length === 0) return null
+
+    let lastUserIndex = -1
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === "USER") {
+        lastUserIndex = i
+        break
+      }
+    }
+
+    if (lastUserIndex === -1) return null
+
+    const hasAssistantAfter = messages
+      .slice(lastUserIndex + 1)
+      .some((m) => m.role === "ASSISTANT")
+
+    if (hasAssistantAfter) return null
+
+    const lastUserMessage = messages[lastUserIndex]
+    return {
+      userMessageId: lastUserMessage.id,
+      providerId: lastUserMessage.providerId ?? providerId,
+      modelId: lastUserMessage.modelId ?? modelId,
+    }
+  }, [messages, modelId, providerId])
+
+  const modelLabelById = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const model of aiCatalog?.models ?? []) {
+      map.set(model.id, model.label)
+    }
+    return map
+  }, [aiCatalog?.models])
 
   // Scroll to bottom when messages change
   // biome-ignore lint/correctness/useExhaustiveDependencies: Intentionally re-run when messages length changes to scroll to new messages
@@ -154,7 +147,15 @@ function ChatView() {
         ) : (
           <div className="mx-auto flex max-w-3xl flex-col gap-4">
             {visibleMessages.map((message) => (
-              <MessageBubble key={message.id} message={message} />
+              <MessageBubble
+                key={message.id}
+                message={message}
+                modelLabel={
+                  message.modelId
+                    ? (modelLabelById.get(message.modelId) ?? message.modelId)
+                    : null
+                }
+              />
             ))}
             {streamState && (
               <StreamingAssistantBubble
@@ -172,15 +173,7 @@ function ChatView() {
       {/* Composer */}
       <MessageComposer
         chatId={chatId}
-        autostart={autostart}
-        onAutostartConsumed={() =>
-          navigate({
-            to: "/chats/$chatId",
-            params: { chatId },
-            replace: true,
-            state: {},
-          })
-        }
+        pendingUserMessage={pendingUserMessage}
         providerId={providerId}
         modelId={modelId}
         models={aiCatalog?.models ?? []}
@@ -229,15 +222,22 @@ function ChatView() {
 
 function MessageBubble({
   message,
+  modelLabel,
 }: {
   message: {
     id: string
     role: string
     content: string
+    providerId: string | null
+    modelId: string | null
+    status: string | null
+    errorMessage: string | null
     createdAt: string
   }
+  modelLabel: string | null
 }) {
   const isUser = message.role === "USER"
+  const showError = message.role === "ASSISTANT" && message.status === "FAILED"
 
   return (
     <div className={cn("flex", isUser ? "justify-end" : "justify-start")}>
@@ -246,10 +246,19 @@ function MessageBubble({
           "max-w-[80%] rounded-2xl px-4 py-2",
           isUser
             ? "bg-primary text-primary-foreground"
-            : "bg-muted text-foreground",
+            : showError
+              ? "border border-destructive bg-destructive/5 text-foreground"
+              : "bg-muted text-foreground",
         )}
       >
         <p className="whitespace-pre-wrap break-words">{message.content}</p>
+        {showError &&
+          message.errorMessage &&
+          message.errorMessage.length > 0 && (
+            <p className="mt-2 text-sm text-destructive">
+              {message.errorMessage}
+            </p>
+          )}
         <p
           className={cn(
             "mt-1 text-xs",
@@ -260,9 +269,26 @@ function MessageBubble({
             hour: "2-digit",
             minute: "2-digit",
           })}
+          {!isUser && modelLabel && (
+            <span className="ml-2">· {modelLabel}</span>
+          )}
         </p>
       </div>
     </div>
+  )
+}
+
+function TypingDots() {
+  return (
+    <output
+      className="flex items-center gap-1 py-1"
+      aria-label="Assistant is typing"
+      aria-live="polite"
+    >
+      <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground/70 motion-reduce:animate-none [animation-delay:-0.3s]" />
+      <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground/70 motion-reduce:animate-none [animation-delay:-0.15s]" />
+      <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground/70 motion-reduce:animate-none" />
+    </output>
   )
 }
 
@@ -278,6 +304,7 @@ function StreamingAssistantBubble({
   errorMessage: string | null
 }) {
   const showError = errorMessage && errorMessage.length > 0
+  const showTypingIndicator = !showError && content.trim().length === 0
 
   return (
     <div className="flex justify-start" key={assistantMessageId}>
@@ -289,9 +316,11 @@ function StreamingAssistantBubble({
             : "bg-muted text-foreground",
         )}
       >
-        <p className="whitespace-pre-wrap break-words">
-          {content.length > 0 ? content : "…"}
-        </p>
+        {showTypingIndicator ? (
+          <TypingDots />
+        ) : (
+          <p className="whitespace-pre-wrap break-words">{content}</p>
+        )}
         {showError && (
           <p className="mt-2 text-sm text-destructive">{errorMessage}</p>
         )}
@@ -308,8 +337,7 @@ function StreamingAssistantBubble({
 
 function MessageComposer({
   chatId,
-  autostart,
-  onAutostartConsumed,
+  pendingUserMessage,
   providerId,
   modelId,
   providers,
@@ -324,8 +352,7 @@ function MessageComposer({
   eventSourceRef,
 }: {
   chatId: string
-  autostart?: AutostartState | null
-  onAutostartConsumed?: () => void
+  pendingUserMessage: PendingUserMessage
   providerId: string
   modelId: string
   providers: ReadonlyArray<string>
@@ -346,7 +373,7 @@ function MessageComposer({
   eventSourceRef: React.MutableRefObject<EventSource | null>
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const autostartHandledRef = useRef<string | null>(null)
+  const streamStartedForUserMessageIdRef = useRef<string | null>(null)
   const utils = trpc.useUtils()
 
   const apiUrl = useMemo(
@@ -421,29 +448,42 @@ function MessageComposer({
   )
 
   useEffect(() => {
-    if (!autostart) return
-    if (autostartHandledRef.current === autostart.userMessageId) return
+    if (!pendingUserMessage) return
+    if (
+      streamStartedForUserMessageIdRef.current ===
+      pendingUserMessage.userMessageId
+    )
+      return
     if (isStreaming || createMessage.isPending) return
 
-    autostartHandledRef.current = autostart.userMessageId
+    // In development, React StrictMode may mount -> unmount -> mount components.
+    // If we start the stream immediately, the "fake" unmount closes EventSource and
+    // we can get stuck showing the typing indicator without an active SSE request.
+    // Scheduling the stream start avoids that (the first mount is cancelled).
+    const { userMessageId, providerId, modelId } = pendingUserMessage
 
-    const assistantMessageId = crypto.randomUUID()
-    onStreamStart(assistantMessageId)
+    const timeoutId = setTimeout(() => {
+      streamStartedForUserMessageIdRef.current = userMessageId
 
-    openStream({
-      chatId,
-      userMessageId: autostart.userMessageId,
-      providerId: autostart.providerId,
-      modelId: autostart.modelId,
-    })
+      const assistantMessageId = crypto.randomUUID()
+      onStreamStart(assistantMessageId)
 
-    onAutostartConsumed?.()
+      openStream({
+        chatId,
+        userMessageId,
+        providerId,
+        modelId,
+      })
+    }, 0)
+
+    return () => {
+      clearTimeout(timeoutId)
+    }
   }, [
-    autostart,
     chatId,
     createMessage.isPending,
     isStreaming,
-    onAutostartConsumed,
+    pendingUserMessage,
     onStreamStart,
     openStream,
   ])
@@ -453,8 +493,10 @@ function MessageComposer({
     if (!content || createMessage.isPending || isStreaming) return
 
     createMessage
-      .mutateAsync({ chatId, content })
+      .mutateAsync({ chatId, content, providerId, modelId })
       .then((newMessage) => {
+        streamStartedForUserMessageIdRef.current = newMessage.id
+
         utils.message.list.setData({ chatId }, (old) => {
           if (!old) return [newMessage]
           return [...old, newMessage]

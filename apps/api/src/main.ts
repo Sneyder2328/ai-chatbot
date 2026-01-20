@@ -45,6 +45,10 @@ async function bootstrap() {
       // Safe defaults for an API. If you later serve HTML from the API,
       // revisit CSP settings.
       contentSecurityPolicy: false,
+      // This API is consumed cross-origin (e.g. Vite dev server on :5173).
+      // Helmet defaults CORP to "same-origin", which breaks EventSource/SSE in Chrome
+      // with `ERR_BLOCKED_BY_RESPONSE.NotSameOrigin`.
+      crossOriginResourcePolicy: { policy: "cross-origin" },
     }),
   )
 
