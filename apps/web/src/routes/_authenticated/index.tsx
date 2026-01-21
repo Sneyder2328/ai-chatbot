@@ -12,10 +12,8 @@ export const Route = createFileRoute("/_authenticated/")({
   component: IndexPage,
 })
 
-function getNewChatNonce(state: unknown) {
-  if (!state || typeof state !== "object") return "initial"
-  const value = (state as { newChatNonce?: unknown }).newChatNonce
-  return typeof value === "string" && value.length > 0 ? value : "initial"
+function getNewChatNonce(state: { newChatNonce?: string } | undefined) {
+  return state?.newChatNonce ?? "initial"
 }
 
 function IndexPage() {
