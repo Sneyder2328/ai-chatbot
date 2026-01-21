@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router"
-import { Send } from "lucide-react"
+import { createFileRoute, useNavigate } from "@tanstack/react-router"
+import { GitFork, Send } from "lucide-react"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Button } from "../../components/ui/button"
 import { trpc } from "../../lib/trpc"
@@ -34,10 +34,16 @@ type PendingUserMessage = {
 
 function ChatView() {
   const { chatId } = Route.useParams()
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const navigate = useNavigate()
+  const utils = trpc.useUtils()
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
   const eventSourceRef = useRef<EventSource | null>(null)
   const [streamState, setStreamState] = useState<StreamState>(null)
   const isStreaming = streamState?.status === "STREAMING"
+  const [forkingFromMessageId, setForkingFromMessageId] = useState<
+    string | null
+  >(null)
+  const [forkErrorMessage, setForkErrorMessage] = useState<string | null>(null)
 
   const {
     data: messages,
@@ -105,10 +111,40 @@ function ChatView() {
     return map
   }, [aiCatalog?.models])
 
+  const forkChat = trpc.chat.fork.useMutation()
+
+  const handleForkFromHere = useCallback(
+    (fromMessageId: string) => {
+      if (!chatId) return
+
+      setForkErrorMessage(null)
+      setForkingFromMessageId(fromMessageId)
+
+      forkChat
+        .mutateAsync({ chatId, fromMessageId })
+        .then((newChat) => {
+          utils.chat.list.invalidate()
+          navigate({ to: "/chats/$chatId", params: { chatId: newChat.id } })
+        })
+        .catch((error) => {
+          setForkErrorMessage(
+            error instanceof Error ? error.message : "Failed to fork chat",
+          )
+        })
+        .finally(() => {
+          setForkingFromMessageId(null)
+        })
+    },
+    [chatId, forkChat, navigate, utils],
+  )
+
   // Scroll to bottom when messages change
   // biome-ignore lint/correctness/useExhaustiveDependencies: Intentionally re-run when messages length changes to scroll to new messages
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    const container = scrollContainerRef.current
+    if (container) {
+      container.scrollTo({ top: container.scrollHeight, behavior: "smooth" })
+    }
   }, [visibleMessages.length, streamState?.content.length])
 
   useEffect(() => {
@@ -135,9 +171,12 @@ function ChatView() {
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden">
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div
+        ref={scrollContainerRef}
+        className="min-h-0 flex-1 overflow-y-auto p-4"
+      >
         {visibleMessages.length === 0 ? (
           <div className="flex h-full items-center justify-center">
             <p className="text-muted-foreground">
@@ -155,6 +194,13 @@ function ChatView() {
                     ? (modelLabelById.get(message.modelId) ?? message.modelId)
                     : null
                 }
+                isForking={forkingFromMessageId === message.id}
+                isForkDisabled={
+                  forkChat.isPending ||
+                  isStreaming ||
+                  message.status === "STREAMING"
+                }
+                onForkFromHere={() => handleForkFromHere(message.id)}
               />
             ))}
             {streamState && (
@@ -165,10 +211,15 @@ function ChatView() {
                 errorMessage={streamState.errorMessage}
               />
             )}
-            <div ref={messagesEndRef} />
           </div>
         )}
       </div>
+
+      {forkErrorMessage && (
+        <div className="px-4 pb-2">
+          <p className="text-sm text-destructive">{forkErrorMessage}</p>
+        </div>
+      )}
 
       {/* Composer */}
       <MessageComposer
@@ -223,6 +274,9 @@ function ChatView() {
 function MessageBubble({
   message,
   modelLabel,
+  isForking,
+  isForkDisabled,
+  onForkFromHere,
 }: {
   message: {
     id: string
@@ -235,6 +289,9 @@ function MessageBubble({
     createdAt: string
   }
   modelLabel: string | null
+  isForking: boolean
+  isForkDisabled: boolean
+  onForkFromHere: () => void
 }) {
   const isUser = message.role === "USER"
   const showError = message.role === "ASSISTANT" && message.status === "FAILED"
@@ -243,7 +300,7 @@ function MessageBubble({
     <div className={cn("flex", isUser ? "justify-end" : "justify-start")}>
       <div
         className={cn(
-          "max-w-[80%] rounded-2xl px-4 py-2",
+          "group max-w-[80%] rounded-2xl px-4 py-2",
           isUser
             ? "bg-primary text-primary-foreground"
             : showError
@@ -259,20 +316,39 @@ function MessageBubble({
               {message.errorMessage}
             </p>
           )}
-        <p
+        <div
           className={cn(
-            "mt-1 text-xs",
+            "mt-1 flex items-center gap-2 text-xs",
             isUser ? "text-primary-foreground/70" : "text-muted-foreground",
           )}
         >
-          {new Date(message.createdAt).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-          {!isUser && modelLabel && (
-            <span className="ml-2">· {modelLabel}</span>
-          )}
-        </p>
+          <span>
+            {new Date(message.createdAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+            {!isUser && modelLabel && (
+              <span className="ml-2">· {modelLabel}</span>
+            )}
+          </span>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onForkFromHere()
+            }}
+            isLoading={isForking}
+            disabled={isForkDisabled}
+            title="Fork from here"
+            className="ml-auto h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+          >
+            {!isForking && <GitFork className="h-4 w-4 opacity-70" />}
+            <span className="sr-only">Fork from here</span>
+          </Button>
+        </div>
       </div>
     </div>
   )
@@ -539,7 +615,7 @@ function MessageComposer({
   }
 
   return (
-    <div className="border-t border-border bg-background p-4">
+    <div className="shrink-0 border-t border-border bg-background p-4">
       <div className="mx-auto max-w-3xl space-y-3">
         <div className="flex flex-wrap items-center gap-2">
           <select

@@ -31,4 +31,10 @@ export const auth = betterAuth({
       refreshCache: true,
     },
   },
+  advanced: {
+    crossSubDomainCookies: {
+      enabled: true,
+      domain: ".sneyderangulo.com", // Allows cookies to be shared across *.sneyderangulo.com
+    },
+  },
 })

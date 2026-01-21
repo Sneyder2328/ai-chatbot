@@ -72,6 +72,8 @@ model Account {
 model Chat {
   id            String    @id @default(uuid(7)) @db.Uuid
   userId        String    @map("user_id")
+  forkedFromChatId    String?   @map("forked_from_chat_id") @db.Uuid
+  forkedFromMessageId String?   @map("forked_from_message_id") @db.Uuid
   title         String
   pinnedAt      DateTime? @map("pinned_at") @db.Timestamptz
   deletedAt     DateTime? @map("deleted_at") @db.Timestamptz
@@ -83,6 +85,7 @@ model Chat {
   messages      Message[]
 
   @@index([userId])
+  @@index([userId, forkedFromChatId])
   @@index([userId, pinnedAt])
   @@index([userId, lastMessageAt])
   @@index([userId, deletedAt])

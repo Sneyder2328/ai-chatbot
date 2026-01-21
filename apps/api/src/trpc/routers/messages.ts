@@ -114,9 +114,7 @@ export const messageRouter = router({
         where: {
           chatId: input.chatId,
         },
-        orderBy: {
-          createdAt: "asc",
-        },
+        orderBy: [{ createdAt: "asc" }, { id: "asc" }],
         select: messageSelect,
       })
 
