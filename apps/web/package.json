@@ -1,6 +1,5 @@
 {
-  "name": "web",
-  "private": true,
+  "name": "@ai-chatbot/web",
   "version": "0.0.0",
   "type": "module",
   "scripts": {
@@ -13,8 +12,8 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.16",
-    "@tanstack/react-router": "^1.144.0",
-    "@tanstack/react-router-devtools": "^1.144.0",
+    "@tanstack/react-router": "^1.149.3",
+    "@tanstack/react-router-devtools": "^1.149.3",
     "@trpc/client": "^11.8.1",
     "@trpc/react-query": "^11.8.1",
     "better-auth": "^1.4.10",
@@ -26,9 +25,11 @@
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
+    "@ai-chatbot/api": "workspace:*",
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/devtools-vite": "^0.4.0",
+    "@tanstack/router-plugin": "^1.149.3",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",

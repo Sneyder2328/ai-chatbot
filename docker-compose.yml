@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres:18-alpine
+    container_name: ai-chatbot-database
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ai_chatbot
+      POSTGRES_USER: ai_chatbot_user
+      POSTGRES_PASSWORD: ai_chatbot_password
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  postgres_data:

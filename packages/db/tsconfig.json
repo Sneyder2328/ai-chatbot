@@ -1,0 +1,10 @@
+{
+  "extends": "@ai-chatbot/tsconfig/node-library.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": "./src"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}
